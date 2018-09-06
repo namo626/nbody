@@ -1,0 +1,69 @@
+-- This file has been generated from package.yaml by hpack version 0.28.2.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 62b5d8496d87b62f63b3f3d4df721112034c081e297a1f76f194e6956984b4a5
+
+name:           nbody
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/githubuser/nbody#readme>
+homepage:       https://github.com/githubuser/nbody#readme
+bug-reports:    https://github.com/githubuser/nbody/issues
+author:         Author name here
+maintainer:     example@example.com
+copyright:      2018 Author name here
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+cabal-version:  >= 1.10
+extra-source-files:
+    ChangeLog.md
+    README.md
+
+source-repository head
+  type: git
+  location: https://github.com/githubuser/nbody
+
+library
+  exposed-modules:
+      Sim
+    , Lib
+    , Visualize
+  other-modules:
+      Paths_nbody
+  hs-source-dirs:
+      src
+  build-depends:
+                base >=4.7 && <5,
+                linear,
+                hmatrix,
+                gloss,
+                random,
+                split
+  default-language: Haskell2010
+
+executable nbody-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_nbody
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , nbody
+    , gloss
+  default-language: Haskell2010
+
+test-suite nbody-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_nbody
+  hs-source-dirs:
+      test
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , nbody
+  default-language: Haskell2010
