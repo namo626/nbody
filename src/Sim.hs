@@ -91,16 +91,3 @@ evolve sys = sys { particles = ps' }
 
 evolution :: System -> [System]
 evolution = iterate evolve
-
-
-system1 = System
-  { number = 2
-  , particles =
-      [ Particle 1 (vector [-1000, 0, 0]) (vector [0, 0, 0]) 5.972e15
-      , Particle 2 (vector [1000, 0, 0]) (vector [0, 0, 0]) 5.972e15
-      ]
-  }
-
-sys2 = mkSystem (0, 20) (0, 10) (0, 5) 3
-
-evs = evolution sys2

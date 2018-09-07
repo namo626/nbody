@@ -1,6 +1,8 @@
 module Visualize where
 
 import Graphics.Gloss
+import GHC.Float (double2Float)
+import Numeric.LinearAlgebra
 import Sim
 
 window :: Display
@@ -10,19 +12,19 @@ background :: Color
 background = black
 
 drawing :: Picture
-drawing = circle 80
+drawing = drawParticle 20
 
-drawParticle :: Int -> Picture
+drawParticle :: Float -> Picture
 drawParticle r = color yellow $ circleSolid r
 
 render :: System -> Picture
 render sys = pictures objs
   where
-    objs = map (\p -> translate $$ p $ drawing) ps
-    ps = map (toList . position) $ particles sys
+    objs = map (\p -> translate (p !! 0) (p !! 1) drawing) ps
+    ps = map (map double2Float . toList . position) $ particles sys
 
 
 
-($$) :: (a -> a -> b) -> [a] -> b
-f $$ [x, y] = f x y
-_ $$ _      = error "List"
+apply2 :: (a -> a -> b) -> [a] -> b
+apply2 f [x, y] = f x y
+apply2 _ _      = error "List"
