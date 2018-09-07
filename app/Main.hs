@@ -3,6 +3,7 @@ module Main where
 import Visualize
 import Sim
 import Graphics.Gloss
+import Numeric.LinearAlgebra
 
 -- system1 = System
 --   { number = 2
@@ -12,16 +13,28 @@ import Graphics.Gloss
 --       ]
 --   }
 
-sys2 :: System
-sys2 = mkSystem (5, 10) (100, 200) (0, 5) 2
+sys :: System
+sys = mkSystem2D (1000, 5000) (-500, 700) (0, 5) 2
 
-evs :: [System]
-evs = evolution sys2
+sys2 :: System
+sys2 = System
+  { number = 2
+  , particles = [
+      Particle 1 (vector [-500, 0]) (vector [0, 0]) 6e15,
+      Particle 2 (vector [ 500, 0]) (vector [0, 0]) 6e15
+      ]
+  }
+
+sysEvo :: [System]
+sysEvo = evolution sys
 
 main :: IO ()
 main = do
-  let state = head evs
-      pic = render state
+  let evos = evolution sys2
+      state = head evos
+      pic   = render state
+      next  = evos !! 150
 
   print state
-  display window background pic
+  print $ next
+  display window background (render next)

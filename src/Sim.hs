@@ -31,24 +31,30 @@ instance Show System where
 g :: Double
 g = 6.674e-11
 
-mkParticles :: (Double, Double)
+mkParticles :: Int
+            -> (Double, Double)
             -> (Double, Double)
             -> (Double, Double)
             -> Int
             -> [Particle]
-mkParticles mr pr vr n =
+mkParticles dim mr pr vr n =
   let gen = mkStdGen 0
       ms = randomRs mr gen
-      ps = groupV3 $ randomRs pr gen
-      vs = groupV3 $ randomRs vr gen
+      ps = groupV $ randomRs pr gen
+      vs = groupV $ randomRs vr gen
       ns = [0..n-1]
-      groupV3 = map vector . chunksOf 3
+      groupV = map vector . chunksOf n
   in
     zipWith4 Particle ns ps vs ms
 
-mkSystem mr pr vr n = System
+mkSystem2D mr pr vr n = System
   { number = n
-  , particles = mkParticles mr pr vr n
+  , particles = mkParticles 2 mr pr vr n
+  }
+
+mkSystem3D mr pr vr n = System
+  { number = n
+  , particles = mkParticles 3 mr pr vr n
   }
 
 getForce :: Particle -> Particle -> Vec
