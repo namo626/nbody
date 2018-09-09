@@ -54,6 +54,7 @@ executable nbody-exe
     , nbody
     , gloss
     , hmatrix
+    , deepseq
   default-language: Haskell2010
 
 test-suite nbody-test

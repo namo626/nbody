@@ -1,9 +1,13 @@
+
 module Main where
 
 import Visualize
 import Sim
 import Graphics.Gloss
 import Numeric.LinearAlgebra
+import System.Environment
+import Control.DeepSeq
+
 
 -- system1 = System
 --   { number = 2
@@ -14,27 +18,34 @@ import Numeric.LinearAlgebra
 --   }
 
 sys :: System
-sys = mkSystem2D (1000, 5000) (-500, 700) (0, 5) 2
+sys = mkSystem2D (6e15, 7e15) (-500, 500) (0, 5) 10
 
 sys2 :: System
 sys2 = System
   { number = 2
   , particles = [
-      Particle 1 (vector [-500, 0]) (vector [0, 0]) 6e15,
-      Particle 2 (vector [ 500, 0]) (vector [0, 0]) 6e15
+      Particle 1 (vector [-500, 0]) (vector [0, 60]) 6e15,
+      Particle 2 (vector [ 500, 0]) (vector [0, -60]) 6e15,
+      Particle 3 (vector [ 0, 300]) (vector [0, 0]) 6e15
       ]
   }
 
-sysEvo :: [System]
-sysEvo = evolution sys
+initState = sys
+fps = 20
 
 main :: IO ()
 main = do
-  let evos = evolution sys2
-      state = head evos
-      pic   = render state
-      next  = evos !! 150
+  -- simulate window background fps initState render nextFrame
+  [n] <- fmap (map read) getArgs :: IO [Int]
+  let states = take n $ evolution initState
+  mapM_ print states
 
-  print state
-  print $ next
-  display window background (render next)
+  --states `deepseq` (return ())
+  -- let evos = evolution sys2
+  --     state = head evos
+  --     pic   = render state
+  --     next  = evos !! 150
+
+  -- print state
+  -- print $ next
+  -- display window background (render next)

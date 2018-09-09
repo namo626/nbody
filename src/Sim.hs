@@ -1,9 +1,13 @@
+{-# LANGUAGE TemplateHaskell #-}
+
 module Sim where
 
 import Numeric.LinearAlgebra
 import System.Random
 import Data.List (zipWith4)
 import Data.List.Split
+--import Control.DeepSeq.TH
+
 
 type Vec = Vector Double
 
@@ -24,6 +28,7 @@ data System = System
   { number :: Int
   , particles :: [Particle]
   }
+
 
 instance Show System where
   show sys = show (particles sys)

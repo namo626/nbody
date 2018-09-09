@@ -4,6 +4,7 @@ import Graphics.Gloss
 import GHC.Float (double2Float)
 import Numeric.LinearAlgebra
 import Sim
+import Graphics.Gloss.Data.ViewPort (ViewPort)
 
 window :: Display
 window = InWindow "Sim" (200, 200) (10, 10)
@@ -12,10 +13,13 @@ background :: Color
 background = black
 
 drawing :: Picture
-drawing = drawParticle 20
+drawing = drawParticle 10
 
 drawParticle :: Float -> Picture
 drawParticle r = color yellow $ circleSolid r
+
+nextFrame :: ViewPort -> Float -> System -> System
+nextFrame _ _ sys = evolve sys
 
 render :: System -> Picture
 render sys = pictures objs
