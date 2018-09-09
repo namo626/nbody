@@ -1,6 +1,24 @@
 {-# LANGUAGE TemplateHaskell #-}
 
-module Sim where
+module Sim
+  ( Vec
+  , Particle
+  , tag
+  , position
+  , velocity
+  , mass
+  , System
+  , number
+  , particles
+  , mkVector
+  , mkSystem
+  , randomParticles
+  , randomSystem2D
+  , randomSystem3D
+  , move
+  , evolve
+  , evolution
+  ) where
 
 import Numeric.LinearAlgebra
 import System.Random
@@ -29,20 +47,36 @@ data System = System
   , particles :: [Particle]
   }
 
-
 instance Show System where
   show sys = show (particles sys)
+
+
 
 g :: Double
 g = 6.674e-11
 
-mkParticles :: Int
+-- System constructors; use data abstraction
+mkVector :: [Double] -> Vec
+mkVector = vector
+
+-- Construct a system from a given list of
+-- position vectors, velocity vectors, and masses
+mkSystem :: [(Vec, Vec, Double)] -> System
+mkSystem xs = System
+  { number = length xs
+  , particles = map (apply Particle) $ zipWith cons [0..] xs
+  }
+  where
+    cons y (a, b, c)     = (y, a, b, c)
+    apply f (y, a, b, c) = f y a b c
+
+randomParticles :: Int
             -> (Double, Double)
             -> (Double, Double)
             -> (Double, Double)
             -> Int
             -> [Particle]
-mkParticles dim mr pr vr n =
+randomParticles dim mr pr vr n =
   let gen = mkStdGen 0
       ms = randomRs mr gen
       ps = groupV $ randomRs pr gen
@@ -52,16 +86,18 @@ mkParticles dim mr pr vr n =
   in
     zipWith4 Particle ns ps vs ms
 
-mkSystem2D mr pr vr n = System
+randomSystem2D mr pr vr n = System
   { number = n
-  , particles = mkParticles 2 mr pr vr n
+  , particles = randomParticles 2 mr pr vr n
   }
 
-mkSystem3D mr pr vr n = System
+randomSystem3D mr pr vr n = System
   { number = n
-  , particles = mkParticles 3 mr pr vr n
+  , particles = randomParticles 3 mr pr vr n
   }
 
+
+-- | Dimension-agnostic
 getForce :: Particle -> Particle -> Vec
 getForce p1 p2 = scalar (g * (m1 * m2 / r^2)) * unit
   where

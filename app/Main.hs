@@ -4,33 +4,21 @@ module Main where
 import Visualize
 import Sim
 import Graphics.Gloss
-import Numeric.LinearAlgebra
 import System.Environment
-import Control.DeepSeq
+--import Control.DeepSeq
 
-
--- system1 = System
---   { number = 2
---   , particles =
---       [ Particle 1 (vector [-1000, 0, 0]) (vector [0, 0, 0]) 5.972e15
---       , Particle 2 (vector [1000, 0, 0]) (vector [0, 0, 0]) 5.972e15
---       ]
---   }
 
 sys :: System
-sys = mkSystem2D (6e15, 7e15) (-500, 500) (0, 5) 10
+sys = randomSystem2D (6e15, 7e15) (-500, 500) (0, 5) 10
 
 sys2 :: System
-sys2 = System
-  { number = 2
-  , particles = [
-      Particle 1 (vector [-500, 0]) (vector [0, 60]) 6e15,
-      Particle 2 (vector [ 500, 0]) (vector [0, -60]) 6e15,
-      Particle 3 (vector [ 0, 300]) (vector [0, 0]) 6e15
-      ]
-  }
+sys2 = mkSystem
+  [ (mkVector [-500, 0], mkVector [0, 60], 6e15)
+  , (mkVector [ 500, 0], mkVector [0, -60], 6e15)
+  , (mkVector [ 0, 300], mkVector [0, 0], 6e15)
+  ]
 
-initState = sys
+initState = sys2
 fps = 20
 
 main :: IO ()
