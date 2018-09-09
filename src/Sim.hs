@@ -55,11 +55,11 @@ instance Show System where
 g :: Double
 g = 6.674e-11
 
--- System constructors; use data abstraction
+-- | Construct a vector from a list of elements
 mkVector :: [Double] -> Vec
 mkVector = vector
 
--- Construct a system from a given list of
+-- | Construct a system from a given list of
 -- position vectors, velocity vectors, and masses
 mkSystem :: [(Vec, Vec, Double)] -> System
 mkSystem xs = System
@@ -97,7 +97,7 @@ randomSystem3D mr pr vr n = System
   }
 
 
--- | Dimension-agnostic
+-- | Calculate the gravitational force vector acted on p1 by p2
 getForce :: Particle -> Particle -> Vec
 getForce p1 p2 = scalar (g * (m1 * m2 / r^2)) * unit
   where
@@ -109,6 +109,8 @@ getForce p1 p2 = scalar (g * (m1 * m2 / r^2)) * unit
     r = norm_2 dr
     unit = normalize dr
 
+-- | Calculate the net gravitational force acted on the particle by
+-- all the other particles
 getForces :: Particle -> [Particle] -> Vec
 getForces p ps = sum $ map (getForce p) ps
 
@@ -118,6 +120,8 @@ getForces p ps = sum $ map (getForce p) ps
 --           -> (Double, Double) -- value of next step
 -- eulerStep f h (t0, y0) = (t + h, y + h*(f t y))
 
+-- | Update the position and velocity of a particle in the system
+-- through a given timestep
 move :: Double -> System -> Particle -> Particle
 move h sys p = let
   (pos, vel) = (position p, velocity p)
@@ -131,10 +135,12 @@ move h sys p = let
 
 stepSize = 0.1
 
+-- | Update the system by one timestep
 evolve :: System -> System
 evolve sys = sys { particles = ps' }
   where
     ps' = map (move stepSize sys) (particles sys)
 
+-- | Stream of system at different timesteps
 evolution :: System -> [System]
 evolution = iterate evolve

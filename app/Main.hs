@@ -23,10 +23,15 @@ fps = 20
 
 main :: IO ()
 main = do
-  -- simulate window background fps initState render nextFrame
-  [n] <- fmap (map read) getArgs :: IO [Int]
-  let states = take n $ evolution initState
-  mapM_ print states
+  ls <- lines `fmap` readFile "../planets.txt"
+  let radius = read $ head ls :: Double
+      initSys = toSystem $ tail ls
+
+  simulate window background fps initSys render nextFrame
+
+  -- [n] <- fmap (map read) getArgs :: IO [Int]
+  -- let states = take n $ evolution initState
+  -- mapM_ print states
 
   --states `deepseq` (return ())
   -- let evos = evolution sys2
