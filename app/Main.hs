@@ -5,11 +5,11 @@ import Visualize
 import Sim
 import Graphics.Gloss
 import System.Environment
---import Control.DeepSeq
+import Control.DeepSeq
 
 
 sys :: System
-sys = randomSystem2D (6e15, 7e15) (-500, 500) (0, 5) 10
+sys = randomSystem2D (6e15, 7e15) (-500, 500) (0, 5) 100
 
 sys2 :: System
 sys2 = mkSystem
@@ -18,16 +18,21 @@ sys2 = mkSystem
   , (mkVector [ 0, 300], mkVector [0, 0], 6e15)
   ]
 
-initState = sys2
+initState = sys
 fps = 20
 
 main :: IO ()
 main = do
-  ls <- lines `fmap` readFile "../planets.txt"
-  let radius = read $ head ls :: Double
-      initSys = toSystem $ tail ls
+  let states = evolution initState
+      finalState = states !! 1000
 
-  simulate window background fps initSys render nextFrame
+  finalState `deepseq` (return ())
+  -- ls <- lines `fmap` readFile "../planets.txt"
+  -- let radius = read $ head ls :: Double
+  --     initSys = toSystem $ tail ls
+
+  -- simulate window background fps initSys render nextFrame
+
 
   -- [n] <- fmap (map read) getArgs :: IO [Int]
   -- let states = take n $ evolution initState

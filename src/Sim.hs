@@ -24,15 +24,16 @@ import Numeric.LinearAlgebra
 import System.Random
 import Data.List (zipWith4)
 import Data.List.Split
---import Control.DeepSeq.TH
+import Control.DeepSeq
+import Control.Parallel.Strategies
 
 
 type Vec = Vector Double
 
 data Particle = Particle
   { tag      :: Int
-  , position :: Vec
-  , velocity :: Vec
+  , position :: !Vec
+  , velocity :: !Vec
   , mass     :: Double
   }
 
@@ -42,6 +43,14 @@ instance Eq Particle where
 instance Show Particle where
   show p = show $ position p
 
+instance NFData Particle where
+  rnf p = t `seq` ps `seq` vel `seq` m `seq` ()
+    where
+      t   = tag p
+      ps  = position p
+      vel = velocity p
+      m   = mass p
+
 data System = System
   { number :: Int
   , particles :: [Particle]
@@ -49,6 +58,9 @@ data System = System
 
 instance Show System where
   show sys = show (particles sys)
+
+instance NFData System where
+  rnf sys = rnf $ particles sys
 
 
 
@@ -112,7 +124,7 @@ getForce p1 p2 = scalar (g * (m1 * m2 / r^2)) * unit
 -- | Calculate the net gravitational force acted on the particle by
 -- all the other particles
 getForces :: Particle -> [Particle] -> Vec
-getForces p ps = sum $ map (getForce p) ps
+getForces p ps = sum (map (getForce p) ps `using` parList rseq)
 
 -- eulerStep :: (Double -> Double -> Double) -- f(t, y)
 --           -> Double
@@ -139,7 +151,7 @@ stepSize = 0.1
 evolve :: System -> System
 evolve sys = sys { particles = ps' }
   where
-    ps' = map (move stepSize sys) (particles sys)
+    ps' = map (move stepSize sys) (particles sys) `using` parList rseq
 
 -- | Stream of system at different timesteps
 evolution :: System -> [System]
