@@ -29,6 +29,7 @@ library
       Sim
     , Lib
     , Visualize
+    , Parser
   other-modules:
       Paths_nbody
   hs-source-dirs:
@@ -50,7 +51,7 @@ executable nbody-exe
       Paths_nbody
   hs-source-dirs:
       app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -O2 -threaded -rtsopts -with-rtsopts=-N -eventlog
   build-depends:
       base >=4.7 && <5
     , nbody

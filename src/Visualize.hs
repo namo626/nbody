@@ -24,8 +24,9 @@ nextFrame _ _ sys = evolve sys
 render :: System -> Picture
 render sys = pictures objs
   where
-    objs = map (\p -> translate (p !! 0) (p !! 1) drawing) ps
+    objs = map (\p -> translate (scale $ p !! 0) (scale $ p !! 1) drawing) ps
     ps = map (map double2Float . toList . position) $ particles sys
+    scale n = n / 2e8
 
 
 

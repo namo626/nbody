@@ -111,7 +111,9 @@ randomSystem3D mr pr vr n = System
 
 -- | Calculate the gravitational force vector acted on p1 by p2
 getForce :: Particle -> Particle -> Vec
-getForce p1 p2 = scalar (g * (m1 * m2 / r^2)) * unit
+getForce p1 p2
+  | p1 == p2 = scalar 0.0
+  | otherwise = scalar (g * (m1 * m2 / r^2)) * unit
   where
     m1 = mass p1
     m2 = mass p2
@@ -125,6 +127,7 @@ getForce p1 p2 = scalar (g * (m1 * m2 / r^2)) * unit
 -- all the other particles
 getForces :: Particle -> [Particle] -> Vec
 getForces p ps = sum (map (getForce p) ps `using` parList rseq)
+--getForces p ps = foldr ((+) . getForce p) 0 ps
 
 -- eulerStep :: (Double -> Double -> Double) -- f(t, y)
 --           -> Double
@@ -137,15 +140,13 @@ getForces p ps = sum (map (getForce p) ps `using` parList rseq)
 move :: Double -> System -> Particle -> Particle
 move h sys p = let
   (pos, vel) = (position p, velocity p)
-  others     = filter (/= p) (particles sys)
-  acc        = (getForces p others) / (scalar $ mass p)
-
+  acc        = (getForces p $ particles sys) / (scalar $ mass p)
   in
     p { position = pos + scalar h * vel
       , velocity = vel + scalar h * acc
       }
 
-stepSize = 0.1
+stepSize = 1000
 
 -- | Update the system by one timestep
 evolve :: System -> System

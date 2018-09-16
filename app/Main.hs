@@ -6,10 +6,11 @@ import Sim
 import Graphics.Gloss
 import System.Environment
 import Control.DeepSeq
+import Parser
 
 
 sys :: System
-sys = randomSystem2D (6e15, 7e15) (-500, 500) (0, 5) 100
+sys = randomSystem2D (6e15, 7e15) (-500, 500) (0, 5) 50
 
 sys2 :: System
 sys2 = mkSystem
@@ -18,32 +19,25 @@ sys2 = mkSystem
   , (mkVector [ 0, 300], mkVector [0, 0], 6e15)
   ]
 
-initState = sys
-fps = 20
+fps = 60
 
-main :: IO ()
-main = do
-  let states = evolution initState
-      finalState = states !! 1000
+-- | Measure performance using dummy system
+test :: IO ()
+test = do
+  [n] <- fmap (map read) getArgs :: IO [Int]
+  let initState = sys
+      states = evolution initState
+      finalState = states !! n
 
   finalState `deepseq` (return ())
-  -- ls <- lines `fmap` readFile "../planets.txt"
-  -- let radius = read $ head ls :: Double
-  --     initSys = toSystem $ tail ls
 
-  -- simulate window background fps initSys render nextFrame
+-- | 2D visualization
+main :: IO ()
+main = do
+  ls <- lines `fmap` readFile "/home/namo/Programs/nbody/planets.txt"
 
+  let radius     = read $ head ls :: Double
+      initState  = toSystem $ tail ls
 
-  -- [n] <- fmap (map read) getArgs :: IO [Int]
-  -- let states = take n $ evolution initState
-  -- mapM_ print states
-
-  --states `deepseq` (return ())
-  -- let evos = evolution sys2
-  --     state = head evos
-  --     pic   = render state
-  --     next  = evos !! 150
-
-  -- print state
-  -- print $ next
-  -- display window background (render next)
+  simulate window background fps initState render nextFrame
+  -- mapM_ print (take 10 $ evolution initState)
