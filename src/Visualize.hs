@@ -2,8 +2,8 @@ module Visualize where
 
 import Graphics.Gloss
 import GHC.Float (double2Float)
-import Numeric.LinearAlgebra
 import Sim
+import Types
 import Graphics.Gloss.Data.ViewPort (ViewPort)
 
 window :: Display

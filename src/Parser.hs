@@ -1,6 +1,7 @@
 module Parser where
 
 import Sim
+import Types
 
 tabular :: [String] -> [[Double]]
 tabular = map (map read . init . words) . filter (not . null)

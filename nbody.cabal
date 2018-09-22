@@ -30,6 +30,7 @@ library
     , Lib
     , Visualize
     , Parser
+    , Types
   other-modules:
       Paths_nbody
   hs-source-dirs:
@@ -37,7 +38,6 @@ library
   build-depends:
                 base >=4.7 && <5,
                 linear,
-                hmatrix,
                 gloss,
                 random,
                 split,

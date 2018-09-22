@@ -1,158 +1,58 @@
-{-# LANGUAGE TemplateHaskell #-}
 
-module Sim
-  ( Vec
-  , Particle
-  , tag
-  , position
-  , velocity
-  , mass
-  , System
-  , number
-  , particles
-  , mkVector
-  , mkSystem
-  , randomParticles
-  , randomSystem2D
-  , randomSystem3D
-  , move
-  , evolve
-  , evolution
-  ) where
+module Sim where
 
-import Numeric.LinearAlgebra
-import System.Random
 import Data.List (zipWith4)
 import Data.List.Split
-import Control.DeepSeq
 import Control.Parallel.Strategies
-
-
-type Vec = Vector Double
-
-data Particle = Particle
-  { tag      :: Int
-  , position :: !Vec
-  , velocity :: !Vec
-  , mass     :: Double
-  }
-
-instance Eq Particle where
-  p1 == p2 = (tag p1) == (tag p2)
-
-instance Show Particle where
-  show p = show $ position p
-
-instance NFData Particle where
-  rnf p = t `seq` ps `seq` vel `seq` m `seq` ()
-    where
-      t   = tag p
-      ps  = position p
-      vel = velocity p
-      m   = mass p
-
-data System = System
-  { number :: Int
-  , particles :: [Particle]
-  }
-
-instance Show System where
-  show sys = show (particles sys)
-
-instance NFData System where
-  rnf sys = rnf $ particles sys
-
+import Types
 
 
 g :: Double
 g = 6.674e-11
 
--- | Construct a vector from a list of elements
-mkVector :: [Double] -> Vec
-mkVector = vector
-
--- | Construct a system from a given list of
--- position vectors, velocity vectors, and masses
-mkSystem :: [(Vec, Vec, Double)] -> System
-mkSystem xs = System
-  { number = length xs
-  , particles = map (apply Particle) $ zipWith cons [0..] xs
-  }
-  where
-    cons y (a, b, c)     = (y, a, b, c)
-    apply f (y, a, b, c) = f y a b c
-
-randomParticles :: Int
-            -> (Double, Double)
-            -> (Double, Double)
-            -> (Double, Double)
-            -> Int
-            -> [Particle]
-randomParticles dim mr pr vr n =
-  let gen = mkStdGen 0
-      ms = randomRs mr gen
-      ps = groupV $ randomRs pr gen
-      vs = groupV $ randomRs vr gen
-      ns = [0..n-1]
-      groupV = map vector . chunksOf n
-  in
-    zipWith4 Particle ns ps vs ms
-
-randomSystem2D mr pr vr n = System
-  { number = n
-  , particles = randomParticles 2 mr pr vr n
-  }
-
-randomSystem3D mr pr vr n = System
-  { number = n
-  , particles = randomParticles 3 mr pr vr n
-  }
+stepSize = 1000
 
 
 -- | Calculate the gravitational force vector acted on p1 by p2
 getForce :: Particle -> Particle -> Vec
 getForce p1 p2
-  | p1 == p2 = scalar 0.0
-  | otherwise = scalar (g * (m1 * m2 / r^2)) * unit
+  | p1 == p2  = zero
+  | otherwise = (g * (m1 * m2 / r^2)) *^ unit
   where
     m1 = mass p1
     m2 = mass p2
     r1 = position p1
     r2 = position p2
     dr = r2 - r1
-    r = norm_2 dr
-    unit = normalize dr
+    r  = norm dr
+    unit = dr ^/ r
 
 -- | Calculate the net gravitational force acted on the particle by
 -- all the other particles
 getForces :: Particle -> [Particle] -> Vec
-getForces p ps = sum (map (getForce p) ps `using` parList rseq)
+getForces p ps = sum $ map (getForce p) ps
 --getForces p ps = foldr ((+) . getForce p) 0 ps
 
--- eulerStep :: (Double -> Double -> Double) -- f(t, y)
---           -> Double
---           -> (Double, Double) -- y
---           -> (Double, Double) -- value of next step
--- eulerStep f h (t0, y0) = (t + h, y + h*(f t y))
 
 -- | Update the position and velocity of a particle in the system
 -- through a given timestep
 move :: Double -> System -> Particle -> Particle
 move h sys p = let
   (pos, vel) = (position p, velocity p)
-  acc        = (getForces p $ particles sys) / (scalar $ mass p)
+  acc        = (getForces p $ particles sys) ^/ mass p
   in
-    p { position = pos + scalar h * vel
-      , velocity = vel + scalar h * acc
+    p { position = pos + h *^ vel
+      , velocity = vel + h *^ acc
       }
 
-stepSize = 1000
 
 -- | Update the system by one timestep
 evolve :: System -> System
 evolve sys = sys { particles = ps' }
   where
-    ps' = map (move stepSize sys) (particles sys) `using` parList rseq
+    ps' = map (move stepSize sys) (particles sys) `using` parListChunk s rdeepseq
+    s = number sys `quot` (4 * 4)
+
 
 -- | Stream of system at different timesteps
 evolution :: System -> [System]
