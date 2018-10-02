@@ -1,5 +1,6 @@
 module Types
   ( Particle
+  , mkParticle
   , tag
   , position
   , velocity
@@ -64,6 +65,9 @@ instance NFData System where
 -- | Construct a vector from a list of elements
 mkVector :: [Double] -> Vec
 mkVector [x, y] = V2 x y
+
+mkParticle :: Int -> Vec -> Vec -> Double -> Particle
+mkParticle = Particle
 
 -- | Construct a system from a given list of
 -- position vectors, velocity vectors, and masses
