@@ -1,6 +1,7 @@
 module BarnesHut where
 
-import Types (Vec, mkVector, Particle, mkParticle, position, mass, velocity, (*^), toList, zero)
+import Types (Vec, mkVector, Particle, mkParticle, position, mass, velocity, (*^), toList, zero,
+              force, getForce)
 import Data.List (partition)
 
 data Tree = Nil
@@ -50,11 +51,9 @@ build box ps = Node info t1 t2 t3 t4
 data Quadrant = NW | NE | SW | SE deriving Eq
 
 getInfo :: Tree -> Info
-getInfo Nil = Info { com = zero,
-                     totalMass = 0 }
+getInfo Nil = Info { com = zero, totalMass = 0 }
 getInfo (Node info _ _ _ _) = info
-getInfo (Leaf p) = Info { com = position p,
-                          totalMass = mass p }
+getInfo (Leaf p) = Info { com = position p, totalMass = mass p }
 
 inRegion :: Quadrant -> Box -> Particle -> Bool
 inRegion qd box p
@@ -66,6 +65,19 @@ inRegion qd box p
     [x, y] = toList $ position p
     xp = xpos box
     yp = ypos box
+
+
+singleForce :: Particle -> Tree -> Vec
+singleForce p1 Nil = error "Nil node"
+singleForce p1 (Leaf p2) = getForce p1 p2
+singleForce p1 (Node info t1 t2 t3 t4)
+  | farEnough info = force (m1, r1) (m2, r2)
+  | otherwise = sum $ map (singleForce p1) [t1, t2, t3, t4]
+  where
+    (m1, r1) = (mass p1, position p1)
+    (m2, r2) = (totalMass info, com info)
+
+farEnough :: Particle -> Info -> Double -> Bool
 
 
 -- testing
