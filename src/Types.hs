@@ -16,7 +16,9 @@ module Types
   , System
   , mkSystem
   , number
+  , universe
   , particles
+  , evolve
   )
   where
 
@@ -52,6 +54,7 @@ instance NFData Particle where
 
 data System = System
   { number    :: !Int
+  , universe  :: Double
   , particles :: [Particle]
   }
 
@@ -71,9 +74,10 @@ mkParticle = Particle
 
 -- | Construct a system from a given list of
 -- position vectors, velocity vectors, and masses
-mkSystem :: [(Vec, Vec, Double)] -> System
-mkSystem xs = System
+mkSystem :: Double -> [(Vec, Vec, Double)] -> System
+mkSystem s xs = System
   { number = length xs
+  , universe = s
   , particles = map (apply Particle) $ zipWith cons [0..] xs
   }
   where
@@ -81,15 +85,32 @@ mkSystem xs = System
     apply f (y, a, b, c) = f y a b c
 
 
+-- | Update a particle given its net force
+update :: Double -> Particle -> Vec -> Particle
+update dt p netF = let
+  (pos, vel) = (position p, velocity p)
+  accel = netF ^/ (mass p)
+  in
+    p { position = pos + dt *^ vel
+      , velocity = vel + dt *^ accel
+      }
+
+-- | Evolve the system one timestep forward
+evolve :: Double
+       -> (System -> [Vec])
+       -> System
+       -> System
+evolve dt strat sys = sys { particles = ps' }
+  where
+    ps' = zipWith (update dt) (particles sys) (strat sys)
+
+
+
+
+
 -- abstract vector operations
 zero :: Vec
 zero = V.zero
-
-(^+^) :: Vec -> Vec -> Vec
-v1 ^+^ v2 = v1 V.^+^ v2
-
-(^-^) :: Vec -> Vec -> Vec
-v1 ^-^ v2 = v1 V.^-^ v2
 
 (^*) :: Vec -> Double -> Vec
 v1 ^* n = v1 V.^* n
@@ -99,9 +120,6 @@ n *^ v1 = n V.*^ v1
 
 (^/) :: Vec -> Double -> Vec
 v ^/ n = v V.^/ n
-
-sumV :: [Vec] -> Vec
-sumV = V.sumV
 
 norm :: Vec -> Double
 norm = M.norm

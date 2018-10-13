@@ -28,9 +28,8 @@ library
   exposed-modules:
       Sim
     , Lib
-    , Visualize
-    , Parser
     , Types
+    , BarnesHut
   other-modules:
       Paths_nbody
   hs-source-dirs:
